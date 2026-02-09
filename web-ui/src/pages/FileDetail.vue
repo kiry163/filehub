@@ -3,54 +3,54 @@
     <div class="section-header">
       <div>
         <h1>文件详情</h1>
-        <p>查看内容预览、下载或分享 filehub:// 链接。</p>
+        <p>自动识别文件类型并展示可预览内容。</p>
       </div>
+      <button class="btn ghost" @click="goBack">返回文件</button>
     </div>
 
     <div v-if="loading" class="loading">加载中...</div>
 
     <div v-else class="detail-grid">
-      <div class="detail-preview glass">
+      <div class="detail-preview">
         <div class="preview-header">
           <div>
-            <div class="file-name">{{ file?.original_name }}</div>
-            <div class="file-meta">{{ metaLine }}</div>
+            <div class="file-title">{{ file?.original_name }}</div>
+            <div class="file-sub">{{ metaLine }}</div>
           </div>
-          <el-button text @click="copyLink">复制链接</el-button>
+          <div class="preview-meta">
+            <span class="pill active">{{ previewLabel }}</span>
+          </div>
         </div>
-        <div class="preview-tabs">
-          <el-button text :class="activeTab === 'image' ? 'active' : ''" @click="activeTab = 'image'">图片预览</el-button>
-          <el-button text :class="activeTab === 'markdown' ? 'active' : ''" @click="activeTab = 'markdown'">Markdown</el-button>
-          <el-button text :class="activeTab === 'video' ? 'active' : ''" @click="activeTab = 'video'">视频</el-button>
-          <el-button text @click="openFullscreen">全屏</el-button>
-        </div>
-        <div class="preview-body">
-          <div v-if="activeTab === 'image'" class="preview-pane active">
+        <div class="preview-body" :class="{ unsupported: previewType === 'none' }">
+          <div v-if="previewType === 'image'" class="preview-pane active">
             <div class="media-frame" v-if="previewUrl">
               <img :src="previewUrl" alt="文件图片预览" />
             </div>
             <div v-else class="preview-empty">图片加载中...</div>
           </div>
-          <div v-if="activeTab === 'markdown'" class="preview-pane active">
-            <article class="markdown" v-html="markdownHtml"></article>
-          </div>
-          <div v-if="activeTab === 'video'" class="preview-pane active">
+          <div v-else-if="previewType === 'video'" class="preview-pane active">
             <div class="media-frame" v-if="previewUrl">
               <video controls preload="metadata" :src="previewUrl"></video>
             </div>
             <div v-else class="preview-empty">视频加载中...</div>
           </div>
+          <div v-else-if="previewType === 'markdown'" class="preview-pane active">
+            <article class="markdown" v-html="markdownHtml"></article>
+          </div>
+          <div v-else class="preview-placeholder">
+            <div>
+              <div class="preview-title">不支持预览的类型</div>
+              <div class="file-sub">请直接下载查看</div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="detail-actions glass">
+      <div class="detail-actions">
         <div class="action-title">操作</div>
-        <el-button type="primary" @click="download">下载文件</el-button>
-        <div class="download-progress" v-if="downloadProgress > 0 && downloadProgress < 100">
-          <div class="file-meta">下载中 · {{ downloadProgress }}%</div>
-          <el-progress :percentage="downloadProgress" />
-        </div>
-        <el-button text @click="copyLink">复制 filehub:// 链接</el-button>
-        <el-button text type="danger" @click="remove">删除文件</el-button>
+        <button class="btn primary full" @click="download">下载文件</button>
+        <button class="btn ghost full" @click="copyFilehub">复制 filehub://</button>
+        <button class="btn ghost full" @click="copyShare">复制分享链接</button>
+        <button class="btn danger full" @click="remove">删除文件</button>
         <div class="mini-info">
           <div>类型：{{ file?.mime_type || '-' }}</div>
           <div>Key：{{ file?.file_id || '-' }}</div>
@@ -58,28 +58,13 @@
       </div>
     </div>
   </section>
-
-  <el-dialog v-model="fullscreen" width="90%" top="5vh" append-to-body>
-    <template #header>
-      <div class="fullscreen-header">预览</div>
-    </template>
-    <div class="fullscreen-body">
-      <div v-if="activeTab === 'image'" class="media-frame">
-        <img :src="previewUrl" alt="全屏预览" />
-      </div>
-      <div v-if="activeTab === 'markdown'" class="markdown" v-html="markdownHtml"></div>
-      <div v-if="activeTab === 'video'" class="media-frame">
-        <video controls preload="metadata" :src="previewUrl"></video>
-      </div>
-    </div>
-  </el-dialog>
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MarkdownIt from 'markdown-it'
-import { getFile, downloadFile, deleteFile, getPreviewUrl } from '../api/files'
+import { getFile, downloadFile, deleteFile, getPreviewUrl, shareFile } from '../api/files'
 import { addTask, updateTask, completeTask, failTask } from '../store/taskCenter'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -87,16 +72,32 @@ const route = useRoute()
 const router = useRouter()
 const file = ref(null)
 const loading = ref(false)
-const activeTab = ref('image')
 const markdownHtml = ref('')
 const markdown = new MarkdownIt({ html: false, linkify: true })
 const previewUrl = ref('')
-const fullscreen = ref(false)
-const downloadProgress = ref(0)
 
 const metaLine = computed(() => {
   if (!file.value) return ''
-  return `${file.value.size ? formatSize(file.value.size) : '--'} · ${file.value.created_at?.slice(0, 16) || '--'}`
+  return `${file.value.size ? formatSize(file.value.size) : '--'} · ${formatDate(file.value.created_at)}`
+})
+
+const previewType = computed(() => {
+  if (!file.value) return 'none'
+  const name = file.value.original_name?.toLowerCase() || ''
+  const mime = file.value.mime_type || ''
+  if (mime.startsWith('image/')) return 'image'
+  if (mime.startsWith('video/')) return 'video'
+  if (mime.includes('markdown') || name.endsWith('.md') || name.endsWith('.markdown') || name.endsWith('.txt')) {
+    return 'markdown'
+  }
+  return 'none'
+})
+
+const previewLabel = computed(() => {
+  if (previewType.value === 'image') return '图片'
+  if (previewType.value === 'video') return '视频'
+  if (previewType.value === 'markdown') return 'Markdown'
+  return '不支持预览'
 })
 
 const formatSize = (size) => {
@@ -111,23 +112,15 @@ const formatSize = (size) => {
   return `${value.toFixed(1)} ${units[idx]}`
 }
 
+const formatDate = (value) => value?.replace('T', ' ').slice(0, 16) || '--'
+
 const fetchFile = async () => {
   loading.value = true
   try {
     const response = await getFile(route.params.id)
     file.value = response.data?.data
     if (!file.value) throw new Error('not found')
-    const mime = file.value.mime_type || ''
-    if (mime.startsWith('image/')) {
-      activeTab.value = 'image'
-      await loadPreviewUrl()
-    } else if (mime.startsWith('video/')) {
-      activeTab.value = 'video'
-      await loadPreviewUrl()
-    } else if (file.value.original_name?.endsWith('.md') || mime.includes('markdown')) {
-      activeTab.value = 'markdown'
-      await loadMarkdown()
-    }
+    await loadPreview()
   } catch {
     ElMessage.error('文件不存在或加载失败')
   } finally {
@@ -135,27 +128,39 @@ const fetchFile = async () => {
   }
 }
 
-const loadMarkdown = async () => {
+const loadPreview = async () => {
   if (!file.value?.file_id) return
-  const response = await downloadFile(file.value.file_id)
-  const text = await response.data.text()
-  markdownHtml.value = markdown.render(text)
+  if (previewType.value === 'markdown') {
+    const response = await downloadFile(file.value.file_id)
+    const text = await response.data.text()
+    markdownHtml.value = markdown.render(text)
+    return
+  }
+  if (previewType.value === 'image' || previewType.value === 'video') {
+    const response = await getPreviewUrl(file.value.file_id)
+    previewUrl.value = response.data?.data?.url || ''
+  }
 }
 
-const loadPreviewUrl = async () => {
-  if (!file.value?.file_id) return
-  if (previewUrl.value) return
-  const response = await getPreviewUrl(file.value.file_id)
-  previewUrl.value = response.data?.data?.url || ''
-}
-
-const copyLink = async () => {
+const copyFilehub = async () => {
   const text = `filehub://${file.value?.file_id}`
   try {
     await navigator.clipboard.writeText(text)
-    ElMessage.success('已复制链接')
+    ElMessage.success('已复制 filehub://')
   } catch {
     ElMessage.error('复制失败')
+  }
+}
+
+const copyShare = async () => {
+  try {
+    const response = await shareFile(file.value?.file_id)
+    const url = response.data?.data?.url
+    if (!url) throw new Error('share failed')
+    await navigator.clipboard.writeText(url)
+    ElMessage.success('已复制分享链接')
+  } catch {
+    ElMessage.error('分享链接生成失败')
   }
 }
 
@@ -171,11 +176,9 @@ const download = async () => {
     sizeLabel: formatSize(file.value.size),
   })
   try {
-    downloadProgress.value = 0
     const response = await downloadFile(file.value.file_id, (event) => {
       if (event.total) {
         const percent = Math.round((event.loaded / event.total) * 100)
-        downloadProgress.value = percent
         updateTask(id, { progress: percent })
       }
     })
@@ -202,19 +205,7 @@ const remove = async () => {
   } catch {}
 }
 
-const openFullscreen = () => {
-  fullscreen.value = true
-}
-
-watch(activeTab, async (tab) => {
-  if (tab === 'markdown' && !markdownHtml.value) {
-    await loadMarkdown()
-  }
-  if ((tab === 'image' || tab === 'video') && !previewUrl.value) {
-    await loadPreviewUrl()
-  }
-})
+const goBack = () => router.push('/')
 
 onMounted(fetchFile)
-
 </script>

@@ -1,10 +1,13 @@
 const viewButtons = document.querySelectorAll('[data-view]');
 const views = document.querySelectorAll('.view');
-const navItems = document.querySelectorAll('.nav-item');
+const layoutButtons = document.querySelectorAll('[data-layout]');
+const fileBoard = document.querySelector('.file-board');
 const toast = document.querySelector('.toast');
 const copyButtons = document.querySelectorAll('[data-copy]');
 const previewTabs = document.querySelectorAll('[data-preview]');
 const previewPanes = document.querySelectorAll('[data-preview-pane]');
+const previewBody = document.querySelector('.preview-body');
+const detailPreview = document.querySelector('.detail-preview');
 const drawer = document.querySelector('.drawer');
 const drawerBackdrop = document.querySelector('.drawer-backdrop');
 const drawerOpenButtons = document.querySelectorAll('[data-drawer-open]');
@@ -20,15 +23,20 @@ const setActiveView = (viewId) => {
     view.classList.toggle('active', view.id === `view-${viewId}`);
   });
 
-  navItems.forEach((item) => {
-    item.classList.toggle('active', item.dataset.view === viewId);
-  });
+  document.body.style.overflow = viewId === 'login' ? 'hidden' : '';
 };
 
 viewButtons.forEach((button) => {
   button.addEventListener('click', () => {
     const target = button.dataset.view;
     if (target) {
+      if (target === 'detail') {
+        const fileName = button.dataset.fileName || '';
+        if (detailPreview) {
+          detailPreview.dataset.fileType = inferFileType(fileName);
+        }
+        updatePreviewSupport();
+      }
       setActiveView(target);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -55,14 +63,72 @@ copyButtons.forEach((button) => {
   });
 });
 
+const setPreviewMode = (mode) => {
+  previewTabs.forEach((item) => {
+    item.classList.toggle('active', item.dataset.preview === mode);
+  });
+  previewPanes.forEach((pane) => {
+    pane.classList.toggle('active', pane.dataset.previewPane === mode);
+  });
+  if (previewBody) {
+    previewBody.classList.toggle('unsupported', mode === 'none');
+  }
+};
+
+const updatePreviewSupport = () => {
+  if (!detailPreview) return;
+  const fileType = detailPreview.dataset.fileType || 'none';
+  const supported = {
+    image: ['image'],
+    markdown: ['markdown'],
+    video: ['video'],
+  };
+  const supportedModes = new Set(['none']);
+  Object.keys(supported).forEach((key) => {
+    if (supported[key].includes(fileType)) {
+      supportedModes.add(key);
+    }
+  });
+
+  previewTabs.forEach((tab) => {
+    const mode = tab.dataset.preview;
+    const show = mode && supportedModes.has(mode);
+    tab.hidden = !show;
+  });
+
+  if (supportedModes.has(fileType)) {
+    setPreviewMode(fileType);
+  } else {
+    setPreviewMode('none');
+  }
+};
+
 previewTabs.forEach((tab) => {
   tab.addEventListener('click', () => {
     const target = tab.dataset.preview;
-    previewTabs.forEach((item) => {
-      item.classList.toggle('active', item.dataset.preview === target);
-    });
-    previewPanes.forEach((pane) => {
-      pane.classList.toggle('active', pane.dataset.previewPane === target);
+    if (!target || tab.hidden) return;
+    setPreviewMode(target);
+  });
+});
+
+const inferFileType = (name) => {
+  if (!name) return 'none';
+  const lower = name.toLowerCase();
+  if (/(\.png|\.jpe?g|\.gif|\.webp|\.bmp|\.svg)$/.test(lower)) return 'image';
+  if (/(\.md|\.markdown|\.txt)$/.test(lower)) return 'markdown';
+  if (/(\.mp4|\.mov|\.webm|\.mkv)$/.test(lower)) return 'video';
+  return 'none';
+};
+
+updatePreviewSupport();
+
+layoutButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    const target = button.dataset.layout;
+    if (!fileBoard || !target) return;
+    fileBoard.setAttribute('data-layout', target);
+    layoutButtons.forEach((item) => {
+      item.classList.toggle('active', item.dataset.layout === target);
     });
   });
 });

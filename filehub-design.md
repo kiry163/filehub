@@ -325,10 +325,14 @@ Response 200:
 {
   "code": 0,
   "data": {
-    "url": "http://223.109.141.179:8080/file/aB3dE9kLmN0P"
+    "url": "https://filehub.example.com/s/a1b2c3d4"
   }
 }
 ```
+
+说明:
+- 返回公开下载链接（无需登录即可访问）
+- 有效期 7 天，过期后返回 404
 
 ### 4.3 响应结构与错误码
 
@@ -395,8 +399,7 @@ filehub-cli config init
 
 说明:
 - CLI 仅使用 `X-Local-Key` 调用，不保存账号密码
-- `public_endpoint` 用于拼接可公网访问的分享链接（不填则使用 `endpoint`）
-- 如果未填写 `public_endpoint`，CLI 会调用 `https://api.ip.sb/jsonip` 获取公网 IP，并写入 `http://<ip>:<port>`
+- `public_endpoint` 用于在上传/列表中输出前端可访问链接（不填则使用 `endpoint`）
 
 ### 5.3 命令
 
@@ -805,11 +808,7 @@ curl -fsSL https://raw.githubusercontent.com/kiry163/filehub/main/scripts/instal
 ```
 
 说明:
-- 默认会调用 `https://api.ip.sb/jsonip` 探测公网 IP，并将 CLI 的 `public_endpoint` 初始化为 `http://<ip>:<port>`
-- 如需强制使用本地地址，可指定：
-```bash
-curl -fsSL https://raw.githubusercontent.com/kiry163/filehub/main/scripts/install.sh | bash -s -- --public-endpoint http://localhost:8080
-```
+- 再次运行脚本不会覆盖已有配置与数据
 
 ```dockerfile
 # 多阶段构建

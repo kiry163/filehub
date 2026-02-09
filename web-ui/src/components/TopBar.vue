@@ -1,75 +1,49 @@
 <template>
-  <header class="topbar glass">
+  <header class="topbar">
     <div class="brand" @click="goHome">
       <div class="logo">FH</div>
       <div class="brand-text">
         <div class="brand-name">FileHub</div>
-        <div class="brand-subtitle">Private File Manager</div>
+        <div class="brand-subtitle">Secure File Control</div>
       </div>
     </div>
     <div class="top-actions">
-      <el-input
-        v-model="keyword"
-        class="search"
-        placeholder="搜索文件名"
-        clearable
-        @input="onSearch"
-      >
-        <template #prefix>
-          <el-icon><Search /></el-icon>
-        </template>
-      </el-input>
-      <el-button type="primary" @click="goUpload">
-        <el-icon><Upload /></el-icon>
-        上传
-      </el-button>
-      <el-button @click="openTaskCenter">
+      <el-button class="btn ghost" @click="openTaskCenter">
         <el-icon><List /></el-icon>
         任务中心
       </el-button>
-      <el-button text @click="logout">
+      <el-button class="btn primary" @click="goUpload">
+        <el-icon><Upload /></el-icon>
+        上传
+      </el-button>
+      <el-button class="btn subtle" @click="handleAuth">
         <el-icon><User /></el-icon>
-        退出
+        {{ authLabel }}
       </el-button>
     </div>
   </header>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { Search, Upload, User, List } from '@element-plus/icons-vue'
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { Upload, User, List } from '@element-plus/icons-vue'
 import { openTaskCenter } from '../store/taskCenter'
-import { clearTokens } from '../store/auth'
+import { clearTokens, getAccessToken } from '../store/auth'
 
-const route = useRoute()
 const router = useRouter()
-const keyword = ref(route.query.keyword || '')
-let timer
 
-const onSearch = () => {
-  window.clearTimeout(timer)
-  timer = window.setTimeout(() => {
-    if (route.path !== '/') {
-      router.push({ path: '/', query: { keyword: keyword.value || undefined } })
-      return
-    }
-    router.replace({ query: { ...route.query, keyword: keyword.value || undefined } })
-  }, 300)
-}
-
-watch(
-  () => route.query.keyword,
-  (value) => {
-    keyword.value = value || ''
-  },
-)
+const authLabel = computed(() => (getAccessToken() ? '退出' : '登录'))
 
 const goUpload = () => router.push('/upload')
 const goHome = () => router.push('/')
 
-const logout = () => {
-  clearTokens()
-  router.push('/login')
+const handleAuth = () => {
+  if (getAccessToken()) {
+    clearTokens()
+    router.push('/login')
+  } else {
+    router.push('/login')
+  }
 }
 </script>

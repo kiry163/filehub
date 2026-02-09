@@ -22,6 +22,7 @@ func NewRouter(svc *service.Service) *gin.Engine {
 
 	handler := &Handler{Service: svc}
 	router.GET("/health", handler.Health)
+	router.GET("/s/:token", handler.DownloadShare)
 
 	api := router.Group("/api/v1")
 	auth := api.Group("/auth")

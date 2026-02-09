@@ -47,11 +47,7 @@ curl -fsSL https://raw.githubusercontent.com/kiry163/filehub/main/scripts/instal
 ```
 
 Notes:
-- By default the installer auto-detects public IP via `https://api.ip.sb/jsonip` and sets CLI `public_endpoint` to `http://<ip>:<port>`.
-- Force localhost:
-  ```bash
-  curl -fsSL https://raw.githubusercontent.com/kiry163/filehub/main/scripts/install.sh | bash -s -- --public-endpoint http://localhost:8080
-  ```
+- The installer keeps existing config and data if present.
 
 ## Recommended Server Layout
 
@@ -190,7 +186,7 @@ Files:
 - `GET /files/{id}` (meta)
 - `GET /files/{id}/download` (download, supports Range)
 - `DELETE /files/{id}`
-- `GET /files/{id}/share` (returns `http(s)://host/file/{id}`)
+- `GET /files/{id}/share` (returns public download URL, valid for 7 days)
 - `GET /files/{id}/preview` (returns a short-lived stream URL)
 - `GET /files/stream?token=...` (streaming endpoint)
 

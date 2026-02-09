@@ -1,6 +1,9 @@
 package api
 
 import (
+	"crypto/rand"
+	"database/sql"
+	"encoding/base64"
 	"errors"
 	"io"
 	"net/http"
@@ -225,8 +228,63 @@ func (h *Handler) ShareFile(c *gin.Context) {
 		h.audit(c, "share", fileID, getUser(c), "failure", "not found")
 		return
 	}
-	h.audit(c, "share", fileID, getUser(c), "success", "")
-	OK(c, gin.H{"url": buildShareURL(c, fileID)})
+
+	now := time.Now().UTC()
+	link, err := h.Service.DB.GetActiveShareLink(c.Request.Context(), fileID, now.Format(time.RFC3339))
+	if err == nil {
+		h.audit(c, "share", fileID, getUser(c), "success", "reused")
+		OK(c, gin.H{"url": buildShareDownloadURL(c, link.Token), "expires_at": link.ExpiresAt})
+		return
+	}
+	if !errors.Is(err, sql.ErrNoRows) {
+		Error(c, http.StatusInternalServerError, 19999, "share failed")
+		h.audit(c, "share", fileID, getUser(c), "failure", "query failed")
+		return
+	}
+
+	expiresAt := now.Add(7 * 24 * time.Hour)
+	link = db.ShareLink{
+		Token:     generateShareToken(32),
+		FileID:    fileID,
+		ExpiresAt: expiresAt.Format(time.RFC3339),
+		CreatedAt: now.Format(time.RFC3339),
+		CreatedBy: getUser(c),
+		Status:    "active",
+	}
+	if err := h.Service.DB.CreateShareLink(c.Request.Context(), link); err != nil {
+		Error(c, http.StatusInternalServerError, 19999, "share failed")
+		h.audit(c, "share", fileID, getUser(c), "failure", "create failed")
+		return
+	}
+	h.audit(c, "share", fileID, getUser(c), "success", "created")
+	OK(c, gin.H{"url": buildShareDownloadURL(c, link.Token), "expires_at": link.ExpiresAt})
+}
+
+func (h *Handler) DownloadShare(c *gin.Context) {
+	token := c.Param("token")
+	link, err := h.Service.DB.GetShareLink(c.Request.Context(), token)
+	if err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	if link.Status != "active" {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	expiresAt, err := time.Parse(time.RFC3339, link.ExpiresAt)
+	if err != nil || time.Now().UTC().After(expiresAt) {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	record, err := h.Service.GetFile(c.Request.Context(), link.FileID)
+	if err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	if err := h.streamObject(c, record, false); err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
 }
 
 func getUser(c *gin.Context) string {
@@ -250,12 +308,18 @@ func buildDownloadURL(c *gin.Context, fileID string) string {
 	return buildBaseURL(c) + "/api/v1/files/" + fileID + "/download"
 }
 
-func buildShareURL(c *gin.Context, fileID string) string {
-	return buildBaseURL(c) + "/file/" + fileID
+func buildShareDownloadURL(c *gin.Context, token string) string {
+	return buildBaseURL(c) + "/s/" + token
 }
 
 func buildPreviewStreamURL(c *gin.Context, token string) string {
 	return buildBaseURL(c) + "/api/v1/files/stream?token=" + token
+}
+
+func generateShareToken(length int) string {
+	buf := make([]byte, length)
+	_, _ = rand.Read(buf)
+	return base64.RawURLEncoding.EncodeToString(buf)
 }
 
 func buildBaseURL(c *gin.Context) string {

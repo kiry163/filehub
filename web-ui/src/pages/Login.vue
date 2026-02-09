@@ -1,20 +1,24 @@
 <template>
-  <div class="login-wrap">
-    <div class="login-card glass">
-      <div class="login-title">登录 FileHub</div>
-      <div class="login-subtitle">安全管理你的私有文件</div>
-      <el-form @submit.prevent="submit">
-        <el-form-item label="用户名">
-          <el-input v-model="username" placeholder="admin" autocomplete="username" />
-        </el-form-item>
-        <el-form-item label="密码">
-          <el-input v-model="password" placeholder="输入密码" type="password" autocomplete="current-password" />
-        </el-form-item>
-        <el-button type="primary" class="full" :loading="loading" @click="submit">登录</el-button>
-      </el-form>
-      <div class="login-hint">使用 JWT 登录，24h 自动续期</div>
+  <section class="auth-screen active">
+    <div class="auth-shell">
+      <div class="auth-card">
+        <div class="auth-title">登录 FileHub</div>
+        <div class="auth-subtitle">安全管理你的私有文件</div>
+        <el-form @submit.prevent="submit">
+          <el-form-item label="用户名">
+            <el-input v-model="username" placeholder="admin" autocomplete="username" />
+          </el-form-item>
+          <el-form-item label="密码">
+            <el-input v-model="password" placeholder="输入密码" type="password" autocomplete="current-password" />
+          </el-form-item>
+          <button class="btn primary full" :disabled="loading" @click="submit">
+            {{ loading ? '登录中...' : '登录' }}
+          </button>
+        </el-form>
+        <div class="login-hint">使用 JWT 登录，24h 自动续期</div>
+      </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup>

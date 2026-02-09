@@ -30,6 +30,15 @@ type RefreshToken struct {
 	IsRevoked bool
 }
 
+type ShareLink struct {
+	Token     string
+	FileID    string
+	ExpiresAt string
+	CreatedAt string
+	CreatedBy string
+	Status    string
+}
+
 func Open(path string) (*DB, error) {
 	handle, err := sql.Open("sqlite3", path)
 	if err != nil {
@@ -74,6 +83,17 @@ func (db *DB) migrate() error {
       message TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`,
+		`CREATE TABLE IF NOT EXISTS share_links (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      token VARCHAR(64) UNIQUE NOT NULL,
+      file_id VARCHAR(32) NOT NULL,
+      expires_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      created_by VARCHAR(64) NOT NULL,
+      status VARCHAR(20) NOT NULL
+    );`,
+		`CREATE INDEX IF NOT EXISTS idx_share_links_file_id ON share_links(file_id);`,
+		`CREATE INDEX IF NOT EXISTS idx_share_links_token ON share_links(token);`,
 		`CREATE INDEX IF NOT EXISTS idx_files_created_by ON files(created_by);`,
 		`CREATE INDEX IF NOT EXISTS idx_files_created_at ON files(created_at);`,
 	}
@@ -229,6 +249,60 @@ func (db *DB) RevokeRefreshToken(ctx context.Context, token string) error {
 func (db *DB) RevokeAllRefreshTokens(ctx context.Context) error {
 	_, err := db.sql.ExecContext(ctx, `UPDATE refresh_tokens SET is_revoked = true`)
 	return err
+}
+
+func (db *DB) CreateShareLink(ctx context.Context, link ShareLink) error {
+	_, err := db.sql.ExecContext(
+		ctx,
+		`INSERT INTO share_links (token, file_id, expires_at, created_at, created_by, status)
+	 VALUES (?, ?, ?, ?, ?, ?)`,
+		link.Token,
+		link.FileID,
+		link.ExpiresAt,
+		link.CreatedAt,
+		link.CreatedBy,
+		link.Status,
+	)
+	return err
+}
+
+func (db *DB) GetShareLink(ctx context.Context, token string) (ShareLink, error) {
+	var link ShareLink
+	row := db.sql.QueryRowContext(ctx, `
+    SELECT token, file_id, expires_at, created_at, created_by, status
+    FROM share_links WHERE token = ?`, token)
+	if err := row.Scan(
+		&link.Token,
+		&link.FileID,
+		&link.ExpiresAt,
+		&link.CreatedAt,
+		&link.CreatedBy,
+		&link.Status,
+	); err != nil {
+		return ShareLink{}, err
+	}
+	return link, nil
+}
+
+func (db *DB) GetActiveShareLink(ctx context.Context, fileID, nowRFC3339 string) (ShareLink, error) {
+	var link ShareLink
+	row := db.sql.QueryRowContext(ctx, `
+    SELECT token, file_id, expires_at, created_at, created_by, status
+    FROM share_links
+    WHERE file_id = ? AND status = 'active' AND expires_at > ?
+    ORDER BY created_at DESC
+    LIMIT 1`, fileID, nowRFC3339)
+	if err := row.Scan(
+		&link.Token,
+		&link.FileID,
+		&link.ExpiresAt,
+		&link.CreatedAt,
+		&link.CreatedBy,
+		&link.Status,
+	); err != nil {
+		return ShareLink{}, err
+	}
+	return link, nil
 }
 
 func NowRFC3339() string {

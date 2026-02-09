@@ -23,12 +23,11 @@ var shareCmd = &cobra.Command{
 			return err
 		}
 		client := NewClient(cfg)
-		_, err = client.ShareFile(fileID)
+		url, err := client.ShareFile(fileID)
 		if err != nil {
 			return err
 		}
-		publicURL := buildPublicURL(cfg, "/file/"+fileID)
-		fmt.Println(publicURL)
+		fmt.Println(url)
 		return nil
 	},
 }
