@@ -3,7 +3,9 @@ package storage
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -20,14 +22,38 @@ type MinioStorage struct {
 }
 
 func NewMinioStorage(ctx context.Context, cfg config.MinioConfig) (*MinioStorage, error) {
-	client, err := minio.New(cfg.Endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
-		Secure: cfg.UseSSL,
-		Region: cfg.Region,
-	})
-	if err != nil {
-		return nil, err
+	var client *minio.Client
+	var err error
+
+	// Retry connecting to MinIO with exponential backoff
+	maxRetries := 10
+	retryDelay := 2 * time.Second
+
+	for i := 0; i < maxRetries; i++ {
+		client, err = minio.New(cfg.Endpoint, &minio.Options{
+			Creds:  credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
+			Secure: cfg.UseSSL,
+			Region: cfg.Region,
+		})
+		if err == nil {
+			// Test connection by checking bucket existence
+			_, bucketErr := client.BucketExists(ctx, cfg.Bucket)
+			if bucketErr == nil {
+				break
+			}
+			err = bucketErr
+		}
+
+		if i < maxRetries-1 {
+			log.Printf("Waiting for MinIO to be ready... (attempt %d/%d): %v", i+1, maxRetries, err)
+			time.Sleep(retryDelay)
+		}
 	}
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to MinIO after %d attempts: %w", maxRetries, err)
+	}
+
 	if err := ensureBucket(ctx, client, cfg.Bucket); err != nil {
 		return nil, err
 	}
