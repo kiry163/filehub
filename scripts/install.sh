@@ -255,7 +255,14 @@ main() {
   log "Starting services..."
   ${compose} -f "${install_dir}/docker-compose.yml" up -d
 
-  local cli_dir="${HOME}/.local/bin"
+  # Install CLI to system PATH
+  local cli_dir="/usr/local/bin"
+  if [[ ! -w "/usr/local/bin" ]]; then
+    cli_dir="${HOME}/.local/bin"
+    log "Warning: /usr/local/bin not writable, installing to ${cli_dir}"
+    log "To install system-wide, run with sudo or as root"
+  fi
+  
   install_cli "$version" "$cli_dir"
   init_cli_config "${cli_dir}/filehub-cli" "$port" "$public_endpoint" "$local_key"
 
