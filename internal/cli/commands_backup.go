@@ -85,6 +85,12 @@ func createBackup(dataDir, output string) (string, error) {
 		if err != nil {
 			return err
 		}
+		if shouldSkipBackupPath(path, d) {
+			if d.IsDir() {
+				return fs.SkipDir
+			}
+			return nil
+		}
 		rel, err := filepath.Rel(dataDir, path)
 		if err != nil {
 			return err
@@ -137,4 +143,14 @@ func createBackup(dataDir, output string) (string, error) {
 	}
 
 	return output, nil
+}
+
+func shouldSkipBackupPath(path string, d fs.DirEntry) bool {
+	segments := strings.Split(filepath.ToSlash(path), "/")
+	for _, segment := range segments {
+		if segment == ".minio.sys" {
+			return true
+		}
+	}
+	return false
 }

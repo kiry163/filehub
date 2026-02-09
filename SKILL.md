@@ -105,6 +105,9 @@ filehub-cli delete filehub://aB3dE9kLmN0P
 filehub-cli backup
 ```
 
+说明:
+- 自动排除 MinIO 内部数据（`.minio.sys`）
+
 指定数据目录与输出文件：
 
 ```bash

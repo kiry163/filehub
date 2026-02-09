@@ -143,6 +143,8 @@ filehub-cli delete filehub://<id>
 
 # backup (compress ~/.filehub/data)
 filehub-cli backup
+
+# backup excludes MinIO internal metadata (.minio.sys)
 ```
 
 ## Configuration
