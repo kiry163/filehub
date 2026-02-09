@@ -97,6 +97,20 @@ filehub-cli download filehub://aB3dE9kLmN0P --output ./downloads/
 filehub-cli delete filehub://aB3dE9kLmN0P
 ```
 
+### 3.7 备份数据
+
+压缩 `~/.filehub/data` 便于迁移：
+
+```bash
+filehub-cli backup
+```
+
+指定数据目录与输出文件：
+
+```bash
+filehub-cli backup --dir ~/.filehub/data --output ./filehub-backup.tar.gz
+```
+
 ## 4. 常见问题
 
 ### 4.1 无法连接服务端

@@ -29,6 +29,7 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.AddCommand(backupCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(configCmd)
 	rootCmd.AddCommand(uploadCmd)

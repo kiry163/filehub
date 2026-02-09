@@ -140,6 +140,9 @@ filehub-cli download filehub://<id> --output ./downloads
 
 # delete
 filehub-cli delete filehub://<id>
+
+# backup (compress ~/.filehub/data)
+filehub-cli backup
 ```
 
 ## Configuration
