@@ -14,6 +14,31 @@ services:
     volumes:
       - ./data/minio:/data
 
+  minio-init:
+    image: minio/mc:latest
+    container_name: filehub-minio-init
+    depends_on:
+      - minio
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      until mc alias set local http://minio:9000 minioadmin minioadmin; do
+        sleep 2;
+      done;
+      mc mb -p local/filehub || true;
+      cat > /tmp/lifecycle.json <<'EOF'
+      {
+        \"Rules\": [
+          {
+            \"ID\": \"abort-incomplete-multipart\",
+            \"Status\": \"Enabled\",
+            \"AbortIncompleteMultipartUpload\": {\"DaysAfterInitiation\": 1}
+          }
+        ]
+      }
+      EOF
+      mc ilm import local/filehub /tmp/lifecycle.json || true;
+    restart: "no"
+
   filehub:
     build:
       context: .

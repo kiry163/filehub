@@ -10,6 +10,7 @@ export const uploadFile = (file, onProgress) => {
   return client.post('/api/v1/files', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
     onUploadProgress: onProgress,
+    timeout: 0,
   })
 }
 
@@ -23,4 +24,5 @@ export const downloadFile = (id, onProgress) =>
   client.get(`/api/v1/files/${id}/download`, {
     responseType: 'blob',
     onDownloadProgress: onProgress,
+    timeout: 0,
   })

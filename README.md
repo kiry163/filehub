@@ -29,6 +29,9 @@ Open:
 - Web UI: `http://localhost:8080`
 - MinIO console: `http://localhost:9001`
 
+MinIO lifecycle:
+- The Docker setup initializes a rule to abort incomplete multipart uploads after 1 day.
+
 Default dev config is in `config.yaml`.
 
 ## One-Click Install (Docker + CLI)
