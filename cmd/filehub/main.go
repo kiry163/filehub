@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -13,9 +15,18 @@ import (
 	"github.com/kiry163/filehub/internal/db"
 	"github.com/kiry163/filehub/internal/service"
 	"github.com/kiry163/filehub/internal/storage"
+	"github.com/kiry163/filehub/internal/version"
 )
 
 func main() {
+	versionFlag := flag.Bool("version", false, "Print version information")
+	flag.Parse()
+
+	if *versionFlag {
+		fmt.Println(version.String())
+		return
+	}
+
 	cfg, err := config.Load("config.yaml")
 	if err != nil {
 		log.Fatal(err)
