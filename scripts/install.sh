@@ -5,7 +5,7 @@ REPO="kiry163/filehub"
 GH_API="https://api.github.com/repos/${REPO}"
 GH_RAW_BASE="https://raw.githubusercontent.com/${REPO}"
 GH_RELEASE_BASE="https://github.com/${REPO}/releases/download"
-IMAGE="ghcr.io/${REPO}"
+IMAGE="kirydocker/filehub"
 
 DEFAULT_DIR="${HOME}/.filehub"
 DEFAULT_PORT="8080"

@@ -53,12 +53,11 @@ jobs:
           GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -o dist/filehub-linux-amd64 ./cmd/filehub
           GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o dist/filehub-cli-linux-amd64 ./cmd/filehub-cli
 
-      - name: Login to GHCR
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: kirydocker
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -67,7 +66,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: kirydocker/filehub
           tags: |
             type=ref,event=tag
 
