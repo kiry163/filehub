@@ -8,8 +8,8 @@ data/
 *.db
 
 # Local builds
-filehub
-filehub-cli
+/filehub
+/filehub-cli
 
 # Node
 web-ui/node_modules/
