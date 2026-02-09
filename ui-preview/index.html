@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FileHub UI Preview</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar glass">
+        <div class="brand">
+          <div class="logo">FH</div>
+          <div class="brand-text">
+            <div class="brand-name">FileHub</div>
+            <div class="brand-subtitle">Private File Manager</div>
+          </div>
+        </div>
+        <div class="top-actions">
+          <label class="search" aria-label="搜索文件">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="7"></circle>
+                <path d="M20 20L17 17"></path>
+              </svg>
+            </span>
+            <input type="text" placeholder="搜索文件名" />
+          </label>
+          <button class="btn primary" data-view="upload">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 16V4"></path>
+                <path d="M8 8l4-4 4 4"></path>
+                <rect x="4" y="16" width="16" height="4" rx="2"></rect>
+              </svg>
+            </span>
+            上传
+          </button>
+          <button class="btn ghost" data-view="login">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M4 20c1.5-4 6-6 8-6s6.5 2 8 6"></path>
+              </svg>
+            </span>
+            登录
+          </button>
+        </div>
+      </header>
+
+      <div class="shell">
+        <aside class="sidebar glass">
+          <nav class="side-nav">
+            <button class="nav-item active" data-view="files">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 6h16"></path>
+                  <path d="M4 12h16"></path>
+                  <path d="M4 18h10"></path>
+                </svg>
+              </span>
+              文件
+            </button>
+            <button class="nav-item" data-view="upload">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 16V4"></path>
+                  <path d="M8 8l4-4 4 4"></path>
+                  <rect x="4" y="16" width="16" height="4" rx="2"></rect>
+                </svg>
+              </span>
+              上传
+            </button>
+            <button class="nav-item" data-view="detail">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="4" y="4" width="16" height="16" rx="3"></rect>
+                  <path d="M8 12h8"></path>
+                  <path d="M8 16h5"></path>
+                </svg>
+              </span>
+              详情
+            </button>
+            <button class="nav-item" data-view="login">
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="8" r="4"></circle>
+                  <path d="M4 20c1.5-4 6-6 8-6s6.5 2 8 6"></path>
+                </svg>
+              </span>
+              登录
+            </button>
+          </nav>
+          <div class="sidebar-foot">
+            <div class="stat">
+              <div class="stat-label">存储使用</div>
+              <div class="stat-value">28.4 GB / 50 GB</div>
+              <div class="progress"><span style="width: 56%"></span></div>
+            </div>
+          </div>
+        </aside>
+
+        <main class="content">
+          <section id="view-files" class="view active">
+            <div class="section-header">
+              <div>
+                <h1>文件</h1>
+                <p>集中管理上传文件，支持复制 filehub:// 链接与快速下载。</p>
+              </div>
+              <div class="toolbar">
+                <button class="btn subtle">排序</button>
+                <button class="btn subtle">筛选</button>
+                <button class="btn danger">批量删除</button>
+              </div>
+            </div>
+
+            <div class="task-center glass">
+              <div class="task-header">
+                <div>
+                  <div class="task-title">任务中心</div>
+                  <div class="task-subtitle">上传/下载实时进度</div>
+                </div>
+                <button class="btn ghost" data-drawer-open>查看全部</button>
+              </div>
+              <div class="task-list">
+                <div class="task-item">
+                  <div>
+                    <div class="file-name">assets.zip</div>
+                    <div class="file-meta">上传中 · 420 MB</div>
+                  </div>
+                  <div class="progress"><span style="width: 46%"></span></div>
+                </div>
+                <div class="task-item">
+                  <div>
+                    <div class="file-name">product-shot.png</div>
+                    <div class="file-meta">下载中 · 3.1 MB</div>
+                  </div>
+                  <div class="progress"><span style="width: 72%"></span></div>
+                </div>
+                <div class="task-item">
+                  <div>
+                    <div class="file-name">meeting-notes.md</div>
+                    <div class="file-meta">已完成 · 84 KB</div>
+                  </div>
+                  <div class="progress done"><span style="width: 100%"></span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="group">
+              <div class="group-title">2026-02-08</div>
+              <div class="file-card glass">
+                <div class="file-info">
+                  <div class="file-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M7 4h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path>
+                      <path d="M14 4v5h5"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="file-name">design-document.pdf</div>
+                    <div class="file-meta">12.4 MB · 10:30</div>
+                  </div>
+                </div>
+                <div class="file-actions">
+                  <button class="btn ghost" data-copy="filehub://aB3dE9kLmN0P">复制链接</button>
+                  <button class="btn ghost">下载</button>
+                  <button class="btn ghost danger">删除</button>
+                </div>
+              </div>
+
+              <div class="file-card glass">
+                <div class="file-info">
+                  <div class="file-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M7 4h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path>
+                      <path d="M14 4v5h5"></path>
+                      <path d="M9 16h6"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="file-name">meeting-notes.md</div>
+                    <div class="file-meta">84 KB · 09:12</div>
+                  </div>
+                </div>
+                <div class="file-actions">
+                  <button class="btn ghost" data-copy="filehub://Q2wEr9tY7uX1">复制链接</button>
+                  <button class="btn ghost">下载</button>
+                  <button class="btn ghost danger">删除</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="group">
+              <div class="group-title">2026-02-07</div>
+              <div class="file-card glass">
+                <div class="file-info">
+                  <div class="file-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="3" width="18" height="18" rx="4"></rect>
+                      <path d="M8 15l3-3 2 2 3-3"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="file-name">product-shot.png</div>
+                    <div class="file-meta">3.1 MB · 18:40</div>
+                  </div>
+                </div>
+                <div class="file-actions">
+                  <button class="btn ghost" data-copy="filehub://Zx9Cv6Nm2LpR">复制链接</button>
+                  <button class="btn ghost">下载</button>
+                  <button class="btn ghost danger">删除</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="view-upload" class="view">
+            <div class="section-header">
+              <div>
+                <h1>上传文件</h1>
+                <p>拖拽或选择文件上传，上传完成后复制 filehub:// 链接。</p>
+              </div>
+            </div>
+            <div class="upload-grid">
+              <div class="upload-drop glass">
+                <div class="drop-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 16V4"></path>
+                    <path d="M8 8l4-4 4 4"></path>
+                    <rect x="4" y="16" width="16" height="4" rx="2"></rect>
+                  </svg>
+                </div>
+                <div class="drop-title">拖拽文件到这里</div>
+                <div class="drop-subtitle">支持 PDF / PNG / TXT / ZIP</div>
+                <button class="btn primary">选择文件</button>
+              </div>
+              <div class="upload-queue">
+                <div class="queue-title">上传队列</div>
+                <div class="queue-item glass">
+                  <div>
+                    <div class="file-name">design-document.pdf</div>
+                    <div class="file-meta">12.4 MB</div>
+                  </div>
+                  <div class="progress"><span style="width: 68%"></span></div>
+                </div>
+                <div class="queue-item glass">
+                  <div>
+                    <div class="file-name">assets.zip</div>
+                    <div class="file-meta">420 MB</div>
+                  </div>
+                  <div class="progress"><span style="width: 32%"></span></div>
+                </div>
+                <div class="result-card glass">
+                  <div class="result-title">上传完成</div>
+                  <div class="result-link">filehub://aB3dE9kLmN0P</div>
+                  <button class="btn ghost" data-copy="filehub://aB3dE9kLmN0P">复制链接</button>
+                </div>
+                <div class="result-card glass">
+                  <div class="result-title">下载任务</div>
+                  <div class="file-meta">downloading: product-shot.png</div>
+                  <div class="progress"><span style="width: 58%"></span></div>
+                  <button class="btn ghost" data-drawer-open>查看任务中心</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="view-detail" class="view">
+            <div class="section-header">
+              <div>
+                <h1>文件详情</h1>
+                <p>查看内容预览、下载或分享 filehub:// 链接。</p>
+              </div>
+            </div>
+            <div class="detail-grid">
+              <div class="detail-preview glass">
+                <div class="preview-header">
+                  <div>
+                    <div class="file-name">design-document.pdf</div>
+                    <div class="file-meta">12.4 MB · 2026-02-08 10:30</div>
+                  </div>
+                  <button class="btn ghost" data-copy="filehub://aB3dE9kLmN0P">复制链接</button>
+                </div>
+                <div class="preview-tabs">
+                  <button class="btn subtle active" data-preview="image">图片预览</button>
+                  <button class="btn subtle" data-preview="markdown">Markdown</button>
+                  <button class="btn subtle" data-preview="video">视频</button>
+                  <button class="btn ghost" data-fullscreen>
+                    <span class="icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 3H3v5"></path>
+                        <path d="M16 3h5v5"></path>
+                        <path d="M8 21H3v-5"></path>
+                        <path d="M16 21h5v-5"></path>
+                      </svg>
+                    </span>
+                    全屏
+                  </button>
+                </div>
+                <div class="preview-body">
+                  <div class="preview-pane active" data-preview-pane="image">
+                    <div class="media-frame">
+                      <img src="https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?auto=format&fit=crop&w=1200&q=80" alt="示例图片" />
+                    </div>
+                  </div>
+                  <div class="preview-pane" data-preview-pane="markdown">
+                    <article class="markdown">
+                      <header class="md-header">
+                        <div class="md-title">FileHub 使用指南</div>
+                        <div class="md-meta">更新于 2026-02-08 · 3 min read</div>
+                      </header>
+                      <p>支持 Markdown 在线预览，包含标题、列表、引用与代码块，方便快速浏览文档。</p>
+                      <h3>亮点</h3>
+                      <ul>
+                        <li>快速复制 filehub:// 链接</li>
+                        <li>在线预览图片、视频、文档</li>
+                        <li>上传与下载实时进度</li>
+                      </ul>
+                      <blockquote>建议将常用文档归档，便于快速检索。</blockquote>
+                      <pre><code>curl -X POST /api/v1/files \
+  -H "Authorization: Bearer xxx" \
+  -F "file=@design.md"</code></pre>
+                    </article>
+                  </div>
+                  <div class="preview-pane" data-preview-pane="video">
+                    <div class="media-frame">
+                      <video controls preload="metadata" poster="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80">
+                        <source src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4" />
+                      </video>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="detail-actions glass">
+                <div class="action-title">操作</div>
+                <button class="btn primary full">下载文件</button>
+                <div class="download-progress">
+                  <div class="file-meta">下载中 · 12.4 MB</div>
+                  <div class="progress"><span style="width: 64%"></span></div>
+                </div>
+                <button class="btn ghost full">复制 filehub:// 链接</button>
+                <button class="btn danger full">删除文件</button>
+                <div class="mini-info">
+                  <div>创建者：admin</div>
+                  <div>类型：application/pdf</div>
+                  <div>Key：aB3dE9kLmN0P</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="view-login" class="view">
+            <div class="login-wrap">
+              <div class="login-card glass">
+                <div class="login-title">登录 FileHub</div>
+                <div class="login-subtitle">安全管理你的私有文件</div>
+                <label class="field">
+                  <span>用户名</span>
+                  <input type="text" placeholder="admin" />
+                </label>
+                <label class="field">
+                  <span>密码</span>
+                  <input type="password" placeholder="输入密码" />
+                </label>
+                <button class="btn primary full">登录</button>
+                <div class="login-hint">使用 JWT 登录，24h 自动续期</div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <nav class="bottom-nav glass" aria-label="移动端导航">
+        <button class="nav-item active" data-view="files" aria-label="文件">
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 6h16"></path>
+              <path d="M4 12h16"></path>
+              <path d="M4 18h10"></path>
+            </svg>
+          </span>
+          文件
+        </button>
+        <button class="nav-item" data-view="upload" aria-label="上传">
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 16V4"></path>
+              <path d="M8 8l4-4 4 4"></path>
+              <rect x="4" y="16" width="16" height="4" rx="2"></rect>
+            </svg>
+          </span>
+          上传
+        </button>
+        <button class="nav-item" data-view="detail" aria-label="详情">
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="4" y="4" width="16" height="16" rx="3"></rect>
+              <path d="M8 12h8"></path>
+              <path d="M8 16h5"></path>
+            </svg>
+          </span>
+          详情
+        </button>
+        <button class="nav-item" data-view="login" aria-label="账户">
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="8" r="4"></circle>
+              <path d="M4 20c1.5-4 6-6 8-6s6.5 2 8 6"></path>
+            </svg>
+          </span>
+          账户
+        </button>
+      </nav>
+    </div>
+
+    <div class="drawer-backdrop" data-drawer-close></div>
+    <aside class="drawer" aria-label="任务中心">
+      <div class="drawer-header">
+        <div>
+          <div class="drawer-title">任务中心</div>
+          <div class="drawer-subtitle">上传 / 下载进度实时更新</div>
+        </div>
+        <button class="btn ghost" data-drawer-close>关闭</button>
+      </div>
+      <div class="drawer-tabs">
+        <button class="btn subtle active" data-task-filter="all">全部</button>
+        <button class="btn subtle" data-task-filter="upload">上传中</button>
+        <button class="btn subtle" data-task-filter="download">下载中</button>
+        <button class="btn subtle" data-task-filter="done">已完成</button>
+      </div>
+      <div class="drawer-list">
+        <div class="drawer-item">
+          <div>
+            <div class="file-name">assets.zip</div>
+            <div class="file-meta">上传中 · 420 MB</div>
+          </div>
+          <div class="progress"><span style="width: 46%"></span></div>
+        </div>
+        <div class="drawer-item">
+          <div>
+            <div class="file-name">product-shot.png</div>
+            <div class="file-meta">下载中 · 3.1 MB</div>
+          </div>
+          <div class="progress"><span style="width: 72%"></span></div>
+        </div>
+        <div class="drawer-item">
+          <div>
+            <div class="file-name">meeting-notes.md</div>
+            <div class="file-meta">已完成 · 84 KB</div>
+          </div>
+          <div class="progress done"><span style="width: 100%"></span></div>
+        </div>
+        <div class="drawer-item">
+          <div>
+            <div class="file-name">intro-video.mp4</div>
+            <div class="file-meta">下载中 · 68 MB</div>
+          </div>
+          <div class="progress"><span style="width: 25%"></span></div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="fullscreen" aria-hidden="true">
+      <div class="fullscreen-inner glass">
+        <div class="fullscreen-header">
+          <div class="fullscreen-title">预览</div>
+          <button class="btn ghost" data-fullscreen-close>
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 6L6 18"></path>
+                <path d="M6 6l12 12"></path>
+              </svg>
+            </span>
+            关闭
+          </button>
+        </div>
+        <div class="fullscreen-body"></div>
+      </div>
+    </div>
+
+    <div class="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>

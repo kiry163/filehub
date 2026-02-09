@@ -1,0 +1,26 @@
+# FileHub 配置文件
+server:
+  port: 8080
+  log_level: info
+
+database:
+  path: ./data/filehub.db
+
+auth:
+  jwt_secret: "local-dev-jwt-secret-please-change"
+  jwt_expire_hours: 24
+  refresh_expire_days: 7
+  admin_username: admin
+  admin_password: "filehub-admin"
+  local_key: "filehub-local-key"
+
+upload:
+  max_size_mb: 1024
+
+minio:
+  endpoint: minio:9000
+  access_key: "minioadmin"
+  secret_key: "minioadmin"
+  bucket: filehub
+  use_ssl: false
+  region: ""

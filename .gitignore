@@ -1,0 +1,25 @@
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Local runtime data
+data/
+*.db
+
+# Local builds
+filehub
+filehub-cli
+
+# Node
+web-ui/node_modules/
+web-ui/dist/
+
+# Embedded web build artifacts (keep the placeholder index.html tracked)
+web/dist/assets/
+web/dist/*.js
+web/dist/*.css
+web/dist/*.map
+
+# Agent tooling
+.agents/
