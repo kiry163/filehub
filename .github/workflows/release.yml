@@ -73,6 +73,7 @@ jobs:
           images: kirydocker/filehub
           tags: |
             type=ref,event=tag
+            type=raw,value=latest
 
       - name: Build and push image
         uses: docker/build-push-action@v6

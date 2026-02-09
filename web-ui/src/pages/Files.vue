@@ -93,6 +93,11 @@
       </div>
     </div>
   </section>
+
+  <el-dialog v-model="copyDialogOpen" title="手动复制" width="420px" append-to-body>
+    <div class="dialog-tip">自动复制失败，请手动复制：</div>
+    <el-input :model-value="copyDialogText" readonly />
+  </el-dialog>
 </template>
 
 <script setup>
@@ -100,6 +105,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Search } from '@element-plus/icons-vue'
 import { listFiles, deleteFile, downloadFile, shareFile } from '../api/files'
+import { tryCopyText } from '../utils/copy'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
@@ -108,6 +114,8 @@ const files = ref([])
 const keyword = ref('')
 const layout = ref('list')
 const selectedIds = ref([])
+const copyDialogOpen = ref(false)
+const copyDialogText = ref('')
 let searchTimer
 
 const capacityBytes = 50 * 1024 * 1024 * 1024
@@ -173,13 +181,18 @@ const isPreviewable = (file) => {
   )
 }
 
+const showCopyDialog = (text) => {
+  copyDialogText.value = text
+  copyDialogOpen.value = true
+}
+
 const copyFilehub = async (file) => {
   const text = `filehub://${file.file_id}`
-  try {
-    await navigator.clipboard.writeText(text)
+  const ok = await tryCopyText(text)
+  if (ok) {
     ElMessage.success('已复制 filehub://')
-  } catch {
-    ElMessage.error('复制失败')
+  } else {
+    showCopyDialog(text)
   }
 }
 
@@ -188,8 +201,12 @@ const copyShare = async (file) => {
     const response = await shareFile(file.file_id)
     const url = response.data?.data?.url
     if (!url) throw new Error('share failed')
-    await navigator.clipboard.writeText(url)
-    ElMessage.success('已复制分享链接')
+    const ok = await tryCopyText(url)
+    if (ok) {
+      ElMessage.success('已复制分享链接')
+    } else {
+      showCopyDialog(url)
+    }
   } catch {
     ElMessage.error('分享链接生成失败')
   }

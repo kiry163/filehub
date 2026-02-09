@@ -48,6 +48,7 @@ curl -fsSL https://raw.githubusercontent.com/kiry163/filehub/main/scripts/instal
 
 Notes:
 - The installer keeps existing config and data if present.
+- It pulls `kirydocker/filehub:latest` by default, and falls back to the latest release tag if needed.
 
 ## Recommended Server Layout
 

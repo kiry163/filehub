@@ -707,6 +707,11 @@ input {
   color: var(--fh-muted);
 }
 
+.dialog-tip {
+  color: var(--fh-muted);
+  margin-bottom: 12px;
+}
+
 .loading {
   color: var(--fh-muted);
 }

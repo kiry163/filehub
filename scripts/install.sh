@@ -79,6 +79,12 @@ latest_version() {
   printf '%s' "$json" | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1
 }
 
+cli_config_path() {
+  local dir
+  dir="${XDG_CONFIG_HOME:-${HOME}/.config}"
+  echo "${dir}/filehub-cli/config.yaml"
+}
+
 install_cli() {
   local version="$1"
   local dest_dir="$2"
@@ -135,10 +141,23 @@ main() {
   local compose
   compose="$(compose_cmd)"
 
-  if [[ -z "$version" ]]; then
-    log "Resolving latest version from GitHub releases..."
-    version="$(latest_version)"
-    [[ -n "$version" ]] || die "failed to resolve latest release tag; try --version vX.Y.Z"
+  local image_tag=""
+  local release_tag=""
+  if [[ -n "$version" ]]; then
+    image_tag="$version"
+    release_tag="$version"
+  else
+    log "Trying to pull latest image..."
+    if docker pull "${IMAGE}:latest" >/dev/null 2>&1; then
+      image_tag="latest"
+    else
+      log "Latest image not available, falling back to GitHub releases tag..."
+    fi
+    release_tag="$(latest_version)"
+    [[ -n "$release_tag" ]] || die "failed to resolve latest release tag; try --version vX.Y.Z"
+    if [[ -z "$image_tag" ]]; then
+      image_tag="$release_tag"
+    fi
   fi
 
   mkdir -p "$install_dir/data/minio"
@@ -185,7 +204,7 @@ main() {
         "$config_template" > "$config_file"
 
     # Render compose template
-    sed -e "s/{{VERSION}}/${version}/g" \
+    sed -e "s/{{VERSION}}/${image_tag}/g" \
         -e "s/{{SERVER_PORT}}/${port}/g" \
         -e "s/{{MINIO_PORT}}/${minio_port}/g" \
         -e "s/{{MINIO_CONSOLE_PORT}}/${minio_console_port}/g" \
@@ -215,7 +234,7 @@ main() {
     local minio_secret
     minio_secret="$(grep "secret_key:" "$config_file" | sed 's/.*secret_key:[[:space:]]*"\([^"]*\)".*/\1/')"
     
-    sed -e "s/{{VERSION}}/${version}/g" \
+    sed -e "s/{{VERSION}}/${image_tag}/g" \
         -e "s/{{SERVER_PORT}}/${port}/g" \
         -e "s/{{MINIO_PORT}}/${minio_port}/g" \
         -e "s/{{MINIO_CONSOLE_PORT}}/${minio_console_port}/g" \
@@ -227,7 +246,7 @@ main() {
 
   # Pull and start services
   log "Pulling images..."
-  docker pull "${IMAGE}:${version}" >/dev/null 2>&1 || docker pull "${IMAGE}:${version}"
+  docker pull "${IMAGE}:${image_tag}" >/dev/null 2>&1 || docker pull "${IMAGE}:${image_tag}"
   docker pull "minio/minio:latest" >/dev/null 2>&1 || docker pull "minio/minio:latest"
 
   log "Starting services..."
@@ -240,14 +259,18 @@ main() {
     log "Warning: /usr/local/bin not writable, installing CLI to ${cli_dir}"
   fi
 
-  install_cli "$version" "$cli_dir"
-  
-  if [[ -n "$local_key" ]]; then
+  install_cli "$release_tag" "$cli_dir"
+
+  local cli_config
+  cli_config="$(cli_config_path)"
+  if [[ ! -f "$cli_config" && -n "$local_key" ]]; then
     init_cli_config "${cli_dir}/filehub-cli" "$port" "$local_key"
+  else
+    log "CLI config exists, keeping it unchanged"
   fi
 
   log ""
-  log "FileHub ${version} is ready!"
+  log "FileHub ${image_tag} is ready!"
   log "- Web UI:       http://localhost:${port}"
   log "- API:          http://localhost:${port}/api/v1"
   log "- MinIO UI:     http://localhost:${minio_console_port}"
