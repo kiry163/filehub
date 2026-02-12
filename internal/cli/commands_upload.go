@@ -18,6 +18,11 @@ var uploadCmd = &cobra.Command{
 			return errors.New("please provide file paths")
 		}
 		recursive, _ := cmd.Flags().GetBool("recursive")
+		folderIDStr, _ := cmd.Flags().GetString("folder")
+		var folderIDPtr *string
+		if folderIDStr != "" {
+			folderIDPtr = &folderIDStr
+		}
 		files, err := collectFiles(args, recursive)
 		if err != nil {
 			return err
@@ -32,7 +37,7 @@ var uploadCmd = &cobra.Command{
 		client := NewClient(cfg)
 		for _, file := range files {
 			fmt.Printf("Uploading %s...\n", file)
-			item, err := client.UploadFile(file, nil)
+			item, err := client.UploadFile(file, folderIDPtr, nil)
 			if err != nil {
 				fmt.Printf("Upload failed: %s\n", err)
 				continue
@@ -46,6 +51,7 @@ var uploadCmd = &cobra.Command{
 
 func init() {
 	uploadCmd.Flags().Bool("recursive", false, "Upload directories recursively")
+	uploadCmd.Flags().StringP("folder", "f", "", "目标文件夹ID")
 }
 
 func collectFiles(args []string, recursive bool) ([]string, error) {

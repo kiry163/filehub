@@ -91,8 +91,22 @@ func (h *Handler) UploadFile(c *gin.Context) {
 		return
 	}
 
+	// 获取 folder_id 参数
+	folderID := c.Query("folder_id")
+	var folderIDPtr *string
+	if folderID != "" {
+		// 验证文件夹存在
+		_, err := h.Service.DB.GetFolder(c.Request.Context(), folderID)
+		if err != nil {
+			Error(c, http.StatusNotFound, 10003, "folder not found")
+			h.audit(c, "upload", "", getUser(c), "failure", "folder not found")
+			return
+		}
+		folderIDPtr = &folderID
+	}
+
 	user := getUser(c)
-	record, err := h.Service.Upload(c.Request.Context(), file, user)
+	record, err := h.Service.Upload(c.Request.Context(), file, user, folderIDPtr)
 	if err != nil {
 		Error(c, http.StatusUnprocessableEntity, 10005, "upload failed")
 		h.audit(c, "upload", "", user, "failure", "upload failed")
@@ -132,7 +146,14 @@ func (h *Handler) ListFiles(c *gin.Context) {
 	offset := parseInt(c.DefaultQuery("offset", "0"), 0)
 	order := c.DefaultQuery("order", "desc")
 	keyword := strings.TrimSpace(c.Query("keyword"))
-	records, total, err := h.Service.ListFiles(c.Request.Context(), limit, offset, order, keyword)
+	folderID := c.Query("folder_id")
+
+	var folderIDPtr *string
+	if folderID != "" {
+		folderIDPtr = &folderID
+	}
+
+	records, total, err := h.Service.ListFiles(c.Request.Context(), limit, offset, order, keyword, folderIDPtr)
 	if err != nil {
 		Error(c, http.StatusInternalServerError, 19999, "list failed")
 		return

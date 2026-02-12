@@ -14,12 +14,17 @@ var listCmd = &cobra.Command{
 		offset, _ := cmd.Flags().GetInt("offset")
 		order, _ := cmd.Flags().GetString("order")
 		keyword, _ := cmd.Flags().GetString("keyword")
+		folderIDStr, _ := cmd.Flags().GetString("folder")
+		var folderIDPtr *string
+		if folderIDStr != "" {
+			folderIDPtr = &folderIDStr
+		}
 		cfg, err := LoadConfig()
 		if err != nil {
 			return err
 		}
 		client := NewClient(cfg)
-		files, total, err := client.ListFiles(limit, offset, order, keyword)
+		files, total, err := client.ListFiles(folderIDPtr, limit, offset, order, keyword)
 		if err != nil {
 			return err
 		}
@@ -37,4 +42,5 @@ func init() {
 	listCmd.Flags().Int("offset", 0, "Offset")
 	listCmd.Flags().String("order", "desc", "Order (asc/desc)")
 	listCmd.Flags().String("keyword", "", "Search keyword")
+	listCmd.Flags().StringP("folder", "f", "", "文件夹ID")
 }
