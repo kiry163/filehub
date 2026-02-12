@@ -17,8 +17,7 @@ var configInitCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endpoint, _ := cmd.Flags().GetString("endpoint")
 		localKey, _ := cmd.Flags().GetString("local-key")
-		publicEndpoint, _ := cmd.Flags().GetString("public-endpoint")
-		path, err := InitConfig(endpoint, localKey, publicEndpoint)
+		path, err := InitConfig(endpoint, localKey)
 		if err != nil {
 			return err
 		}
@@ -30,6 +29,5 @@ var configInitCmd = &cobra.Command{
 func init() {
 	configInitCmd.Flags().String("endpoint", "", "API endpoint")
 	configInitCmd.Flags().String("local-key", "", "Local key")
-	configInitCmd.Flags().String("public-endpoint", "", "Public endpoint for share links")
 	configCmd.AddCommand(configInitCmd)
 }

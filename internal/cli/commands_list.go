@@ -25,9 +25,8 @@ var listCmd = &cobra.Command{
 		}
 		fmt.Printf("Total: %d\n", total)
 		for _, file := range files {
-			publicURL := buildPublicURL(cfg, "/file/"+file.FileID)
 			fmt.Printf("%s\t%s\t%s\n", file.FileID, file.OriginalName, file.CreatedAt)
-			fmt.Printf("%s\n", publicURL)
+			fmt.Printf("%s\n", file.DownloadURL)
 		}
 		return nil
 	},

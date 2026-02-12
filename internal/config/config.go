@@ -17,8 +17,9 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Port     int    `yaml:"port"`
-	LogLevel string `yaml:"log_level"`
+	Port           int    `yaml:"port"`
+	LogLevel       string `yaml:"log_level"`
+	PublicEndpoint string `yaml:"public_endpoint"`
 }
 
 type DatabaseConfig struct {
@@ -112,6 +113,9 @@ func overrideWithEnv(config *Config) {
 	}
 	if value := os.Getenv("FILEHUB_SERVER_LOG_LEVEL"); value != "" {
 		config.Server.LogLevel = value
+	}
+	if value := os.Getenv("FILEHUB_SERVER_PUBLIC_ENDPOINT"); value != "" {
+		config.Server.PublicEndpoint = value
 	}
 	if value := os.Getenv("FILEHUB_DATABASE_PATH"); value != "" {
 		config.Database.Path = value

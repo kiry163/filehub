@@ -119,8 +119,7 @@ Initialize config:
 ```bash
 filehub-cli config init \
   --endpoint http://localhost:8080 \
-  --local-key filehub-local-key \
-  --public-endpoint http://localhost:8080
+  --local-key filehub-local-key
 ```
 
 Commands:

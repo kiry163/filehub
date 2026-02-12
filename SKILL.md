@@ -46,8 +46,7 @@ curl -fsSL https://raw.githubusercontent.com/kiry163/filehub/main/scripts/instal
 ```bash
 filehub-cli config init \
   --endpoint http://localhost:8080 \
-  --local-key <local_key> \
-  --public-endpoint http://localhost:8080
+  --local-key <local_key>
 ```
 
 `local_key` 从服务端配置中获取：`~/.filehub/config.yaml`。

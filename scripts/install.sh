@@ -100,6 +100,18 @@ install_cli() {
   chmod +x "${dest_dir}/filehub-cli"
 }
 
+fetch_public_ip() {
+  local ip=""
+  # Try multiple IP services
+  if command -v curl >/dev/null 2>&1; then
+    ip=$(curl -fsSL --connect-timeout 5 'https://api.ip.sb/jsonip' 2>/dev/null | sed -n 's/.*"ip":[[:space:]]*"\([^"]*\)".*/\1/p')
+  fi
+  if [[ -z "$ip" ]] && command -v wget >/dev/null 2>&1; then
+    ip=$(wget -qO- --timeout=5 'https://api.ip.sb/jsonip' 2>/dev/null | sed -n 's/.*"ip":[[:space:]]*"\([^"]*\)".*/\1/p')
+  fi
+  printf '%s' "$ip"
+}
+
 init_cli_config() {
   local cli_bin="$1"
   local port="$2"
@@ -107,7 +119,6 @@ init_cli_config() {
 
   "$cli_bin" config init \
     --endpoint "http://localhost:${port}" \
-    --public-endpoint "http://localhost:${port}" \
     --local-key "${local_key}" >/dev/null 2>/dev/null || true
 }
 
@@ -181,11 +192,23 @@ main() {
     log ""
 
     # Generate random values
-    local jwt_secret admin_password minio_secret
+    local jwt_secret admin_password minio_secret public_endpoint
     jwt_secret="$(rand_token)$(rand_token)"
     admin_password="$(rand_token)"
     local_key="$(rand_token)"
     minio_secret="$(rand_token)"
+
+    # Try to detect public IP
+    log "Detecting public IP..."
+    local public_ip
+    public_ip="$(fetch_public_ip)"
+    if [[ -n "$public_ip" ]]; then
+      public_endpoint="http://${public_ip}:${port}"
+      log "Public endpoint detected: ${public_endpoint}"
+    else
+      public_endpoint=""
+      log "Could not detect public IP, public_endpoint will be empty"
+    fi
 
     # Download templates
     log "Downloading configuration templates..."
@@ -201,6 +224,7 @@ main() {
         -e "s/{{ADMIN_PASSWORD}}/${admin_password}/g" \
         -e "s/{{LOCAL_KEY}}/${local_key}/g" \
         -e "s/{{MINIO_SECRET_KEY}}/${minio_secret}/g" \
+        -e "s|{{PUBLIC_ENDPOINT}}|${public_endpoint}|g" \
         "$config_template" > "$config_file"
 
     # Render compose template

@@ -38,8 +38,7 @@ var uploadCmd = &cobra.Command{
 				continue
 			}
 			fmt.Printf("filehub://%s\n", item.FileID)
-			publicURL := buildPublicURL(cfg, "/file/"+item.FileID)
-			fmt.Println(publicURL)
+			fmt.Println(item.DownloadURL)
 		}
 		return nil
 	},

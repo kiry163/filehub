@@ -392,14 +392,14 @@ curl -fsSL https://raw.githubusercontent.com/kiry163/filehub/main/scripts/instal
 ### 5.2 配置
 ```bash
 filehub-cli config init
-# 输入: API endpoint, Local Key, Public endpoint (optional)
+# 输入: API endpoint, Local Key
 
 # 配置文件: ~/.config/filehub-cli/config.yaml
 ```
 
 说明:
 - CLI 仅使用 `X-Local-Key` 调用，不保存账号密码
-- `public_endpoint` 用于在上传/列表中输出前端可访问链接（不填则使用 `endpoint`）
+- 公开访问的 URL 由服务器配置中的 `public_endpoint` 生成
 
 ### 5.3 命令
 

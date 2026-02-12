@@ -1,6 +1,7 @@
 server:
   port: 8080
   log_level: info
+  public_endpoint: "{{PUBLIC_ENDPOINT}}"
 
 database:
   path: ./data/filehub.db

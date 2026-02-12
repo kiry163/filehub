@@ -105,6 +105,7 @@ func (h *Handler) UploadFile(c *gin.Context) {
 		"original_name": record.OriginalName,
 		"size":          record.Size,
 		"created_at":    record.CreatedAt,
+		"download_url":  h.buildDownloadURL(c, record.FileID),
 	})
 }
 
@@ -122,7 +123,7 @@ func (h *Handler) GetFile(c *gin.Context) {
 		"mime_type":     record.MimeType,
 		"filehub_url":   "filehub://" + record.FileID,
 		"created_at":    record.CreatedAt,
-		"download_url":  buildDownloadURL(c, record.FileID),
+		"download_url":  h.buildDownloadURL(c, record.FileID),
 	})
 }
 
@@ -144,6 +145,7 @@ func (h *Handler) ListFiles(c *gin.Context) {
 			"size":          record.Size,
 			"filehub_url":   "filehub://" + record.FileID,
 			"created_at":    record.CreatedAt,
+			"download_url":  h.buildDownloadURL(c, record.FileID),
 		})
 	}
 	OK(c, gin.H{"total": total, "files": files})
@@ -168,7 +170,7 @@ func (h *Handler) PreviewFile(c *gin.Context) {
 		h.audit(c, "preview", fileID, actor, "failure", "token failed")
 		return
 	}
-	url := buildPreviewStreamURL(c, token)
+	url := h.buildPreviewStreamURL(c, token)
 	h.audit(c, "preview", fileID, actor, "success", "")
 	OK(c, gin.H{"url": url})
 }
@@ -233,7 +235,7 @@ func (h *Handler) ShareFile(c *gin.Context) {
 	link, err := h.Service.DB.GetActiveShareLink(c.Request.Context(), fileID, now.Format(time.RFC3339))
 	if err == nil {
 		h.audit(c, "share", fileID, getUser(c), "success", "reused")
-		OK(c, gin.H{"url": buildShareDownloadURL(c, link.Token), "expires_at": link.ExpiresAt})
+		OK(c, gin.H{"url": h.buildShareDownloadURL(c, link.Token), "expires_at": link.ExpiresAt})
 		return
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
@@ -257,7 +259,7 @@ func (h *Handler) ShareFile(c *gin.Context) {
 		return
 	}
 	h.audit(c, "share", fileID, getUser(c), "success", "created")
-	OK(c, gin.H{"url": buildShareDownloadURL(c, link.Token), "expires_at": link.ExpiresAt})
+	OK(c, gin.H{"url": h.buildShareDownloadURL(c, link.Token), "expires_at": link.ExpiresAt})
 }
 
 func (h *Handler) DownloadShare(c *gin.Context) {
@@ -304,16 +306,16 @@ func parseInt(value string, fallback int) int {
 	return parsed
 }
 
-func buildDownloadURL(c *gin.Context, fileID string) string {
-	return buildBaseURL(c) + "/api/v1/files/" + fileID + "/download"
+func (h *Handler) buildDownloadURL(c *gin.Context, fileID string) string {
+	return h.buildBaseURL(c) + "/api/v1/files/" + fileID + "/download"
 }
 
-func buildShareDownloadURL(c *gin.Context, token string) string {
-	return buildBaseURL(c) + "/s/" + token
+func (h *Handler) buildShareDownloadURL(c *gin.Context, token string) string {
+	return h.buildBaseURL(c) + "/s/" + token
 }
 
-func buildPreviewStreamURL(c *gin.Context, token string) string {
-	return buildBaseURL(c) + "/api/v1/files/stream?token=" + token
+func (h *Handler) buildPreviewStreamURL(c *gin.Context, token string) string {
+	return h.buildBaseURL(c) + "/api/v1/files/stream?token=" + token
 }
 
 func generateShareToken(length int) string {
@@ -322,7 +324,11 @@ func generateShareToken(length int) string {
 	return base64.RawURLEncoding.EncodeToString(buf)
 }
 
-func buildBaseURL(c *gin.Context) string {
+func (h *Handler) buildBaseURL(c *gin.Context) string {
+	if h.Service.Config.Server.PublicEndpoint != "" {
+		return h.Service.Config.Server.PublicEndpoint
+	}
+
 	scheme := "http"
 	if c.Request.TLS != nil {
 		scheme = "https"
